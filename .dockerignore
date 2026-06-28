@@ -10,7 +10,7 @@
 **/TestResults
 **/*.user
 **/*.suo
-storage
+/storage
 *.log
 docker-compose*.yml
 README.md
