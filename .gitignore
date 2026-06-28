@@ -1,0 +1,17 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+TestResults/
+coverage/
+appsettings.Local.json
+storage/
+.dotnet/
+.dotnet-home/
+.nuget/
+.verify-bin/
+.verify-obj/
+.tools/
+dotnet-install.ps1
