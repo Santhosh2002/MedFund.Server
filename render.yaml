@@ -18,6 +18,8 @@ services:
         value: true
       - key: Database__SeedDevelopmentDataOnStartup
         value: false
+      - key: Swagger__Enabled
+        value: true
       - key: DATABASE_URL
         sync: false
       - key: Jwt__SigningKey

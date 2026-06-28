@@ -78,7 +78,8 @@ var app = builder.Build();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
+var swaggerEnabled = app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("Swagger:Enabled");
+if (swaggerEnabled)
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -87,6 +88,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapGet("/", () => swaggerEnabled ? Results.Redirect("/swagger") : Results.Ok(new { name = "MedFund API" })).AllowAnonymous();
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy" })).AllowAnonymous();
 app.MapControllers();
 

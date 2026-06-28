@@ -58,6 +58,7 @@ ASPNETCORE_URLS=http://+:10000
 DATABASE_URL=<Neon Postgres connection string>
 Database__ApplyMigrationsOnStartup=true
 Database__SeedDevelopmentDataOnStartup=false
+Swagger__Enabled=true
 Jwt__SigningKey=<generated or manually provided secret>
 Email__ApiKey=<Mailjet API key>
 Email__ApiSecret=<Mailjet API secret>
