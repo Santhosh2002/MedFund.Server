@@ -1,0 +1,16 @@
+.git
+.vs
+.vscode
+.idea
+.agents
+.codex
+.verify-bin
+**/bin
+**/obj
+**/TestResults
+**/*.user
+**/*.suo
+storage
+*.log
+docker-compose*.yml
+README.md

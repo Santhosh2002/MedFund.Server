@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: medfund-api
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:10000
+      - key: Database__ApplyMigrationsOnStartup
+        value: true
+      - key: Database__SeedDevelopmentDataOnStartup
+        value: false
+      - key: DATABASE_URL
+        sync: false
+      - key: Jwt__SigningKey
+        generateValue: true
+      - key: Jwt__Issuer
+        value: MedFund
+      - key: Jwt__Audience
+        value: MedFund.Frontend
+      - key: Email__Enabled
+        value: true
+      - key: Email__ApiKey
+        sync: false
+      - key: Email__ApiSecret
+        sync: false
+      - key: Email__FromEmail
+        sync: false
+      - key: Email__FromName
+        value: MedFund
+      - key: Email__FrontendBaseUrl
+        sync: false

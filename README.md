@@ -12,7 +12,7 @@ ASP.NET Core modular monolith backend for the MedFund frontend.
 
 ## Local Setup
 
-1. Install the .NET 8 SDK.
+1. Install the .NET 10 SDK.
 2. Start PostgreSQL and create/update the connection string in `src/MedFund.Api/appsettings.Development.json` or user secrets.
 
 ```powershell
@@ -42,6 +42,30 @@ dotnet run --project src/MedFund.Api
 ```
 
 The API listens on `http://localhost:8081/api` and `https://localhost:7081/api`.
+
+## Render Docker Deployment
+
+This backend can deploy to Render as a Docker web service using the root `Dockerfile`.
+
+1. Push this repository to GitHub.
+2. In Render, create a Blueprint from the repository, or create a Docker web service manually.
+3. If using the Blueprint, Render reads `render.yaml`, creates the `medfund-api` service, and prompts for secret values.
+4. Confirm these production environment variables:
+
+```text
+ASPNETCORE_ENVIRONMENT=Production
+ASPNETCORE_URLS=http://+:10000
+DATABASE_URL=<Neon Postgres connection string>
+Database__ApplyMigrationsOnStartup=true
+Database__SeedDevelopmentDataOnStartup=false
+Jwt__SigningKey=<generated or manually provided secret>
+Email__ApiKey=<Mailjet API key>
+Email__ApiSecret=<Mailjet API secret>
+Email__FromEmail=<verified sender address>
+Email__FrontendBaseUrl=<frontend URL>
+```
+
+The API exposes `/health` for Render health checks. When `DATABASE_URL` is present, the app converts the Postgres URL into the Npgsql connection string format used by EF Core, including Neon options such as `sslmode=require` and `channel_binding=require`.
 
 ## Development Users
 
