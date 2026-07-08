@@ -274,3 +274,30 @@ public sealed class UserSecurityToken : AuditableEntity
 
     public bool IsActive => ConsumedAt is null && ExpiresAt > DateTimeOffset.UtcNow;
 }
+
+public sealed class PartnershipLead : AuditableEntity
+{
+    public required string FirstName { get; set; }
+
+    public required string LastName { get; set; }
+
+    public required string PhoneNumber { get; set; }
+
+    public required string Email { get; set; }
+
+    public PartnershipPartnerType PartnerType { get; set; }
+
+    public required string OrganizationName { get; set; }
+
+    public PartnershipLeadStatus Status { get; set; } = PartnershipLeadStatus.New;
+
+    public string Source { get; set; } = "WEBSITE_PARTNERSHIP_FORM";
+
+    public string? IpAddress { get; set; }
+
+    public string? UserAgent { get; set; }
+
+    public string? Notes { get; set; }
+
+    public DateTimeOffset? ContactedAt { get; set; }
+}

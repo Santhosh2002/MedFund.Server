@@ -6,6 +6,7 @@
 	</PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
     <PackageReference Include="xunit" Version="2.8.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.1">
@@ -15,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\MedFund.Application\MedFund.Application.csproj" />
+    <ProjectReference Include="..\..\src\MedFund.Api\MedFund.Api.csproj" />
     <ProjectReference Include="..\..\src\MedFund.Domain\MedFund.Domain.csproj" />
   </ItemGroup>
 </Project>

@@ -53,7 +53,7 @@ public sealed class ExceptionHandlingMiddleware
             Type = $"https://httpstatuses.com/{status}",
             Title = title,
             Status = status,
-            Detail = exception.Message,
+            Detail = exception is ValidationException ? "One or more validation errors occurred." : exception.Message,
             Instance = context.Request.Path
         };
 

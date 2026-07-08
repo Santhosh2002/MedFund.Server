@@ -38,6 +38,8 @@ public sealed class MedFundDbContext : DbContext, IApplicationDbContext
 
     public DbSet<UserSecurityToken> UserSecurityTokens => Set<UserSecurityToken>();
 
+    public DbSet<PartnershipLead> PartnershipLeads => Set<PartnershipLead>();
+
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow;
@@ -60,6 +62,22 @@ public sealed class MedFundDbContext : DbContext, IApplicationDbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var enumConverter = new EnumToStringConverter<UserRole>();
+        var partnershipPartnerTypeConverter = new ValueConverter<PartnershipPartnerType, string>(
+            value => value == PartnershipPartnerType.HealthcareProvider ? "HEALTHCARE_PROVIDER" : "NBFC",
+            value => value == "HEALTHCARE_PROVIDER" ? PartnershipPartnerType.HealthcareProvider : PartnershipPartnerType.Nbfc);
+        var partnershipLeadStatusConverter = new ValueConverter<PartnershipLeadStatus, string>(
+            value => value == PartnershipLeadStatus.New ? "NEW" :
+                value == PartnershipLeadStatus.Contacted ? "CONTACTED" :
+                value == PartnershipLeadStatus.Qualified ? "QUALIFIED" :
+                value == PartnershipLeadStatus.Rejected ? "REJECTED" :
+                value == PartnershipLeadStatus.Converted ? "CONVERTED" :
+                "NEW",
+            value => value == "NEW" ? PartnershipLeadStatus.New :
+                value == "CONTACTED" ? PartnershipLeadStatus.Contacted :
+                value == "QUALIFIED" ? PartnershipLeadStatus.Qualified :
+                value == "REJECTED" ? PartnershipLeadStatus.Rejected :
+                value == "CONVERTED" ? PartnershipLeadStatus.Converted :
+                PartnershipLeadStatus.New);
         modelBuilder.Entity<User>(builder =>
         {
             builder.ToTable("users");
@@ -200,6 +218,31 @@ public sealed class MedFundDbContext : DbContext, IApplicationDbContext
             builder.Property(x => x.Purpose).HasMaxLength(80).IsRequired();
             builder.Property(x => x.TokenHash).HasMaxLength(128).IsRequired();
             builder.Ignore(x => x.IsActive);
+        });
+
+        modelBuilder.Entity<PartnershipLead>(builder =>
+        {
+            builder.ToTable("partnership_leads");
+            builder.HasKey(x => x.Id);
+            builder.HasIndex(x => x.Email).HasDatabaseName("idx_partnership_leads_email");
+            builder.HasIndex(x => x.PartnerType).HasDatabaseName("idx_partnership_leads_partner_type");
+            builder.HasIndex(x => x.Status).HasDatabaseName("idx_partnership_leads_status");
+            builder.HasIndex(x => x.CreatedAt).HasDatabaseName("idx_partnership_leads_created_at");
+            builder.Property(x => x.Id).HasColumnName("id");
+            builder.Property(x => x.FirstName).HasColumnName("first_name").HasMaxLength(100).IsRequired();
+            builder.Property(x => x.LastName).HasColumnName("last_name").HasMaxLength(100).IsRequired();
+            builder.Property(x => x.PhoneNumber).HasColumnName("phone_number").HasMaxLength(30).IsRequired();
+            builder.Property(x => x.Email).HasColumnName("email").HasMaxLength(254).IsRequired();
+            builder.Property(x => x.PartnerType).HasColumnName("partner_type").HasConversion(partnershipPartnerTypeConverter).HasMaxLength(40).IsRequired();
+            builder.Property(x => x.OrganizationName).HasColumnName("organization_name").HasMaxLength(200).IsRequired();
+            builder.Property(x => x.Status).HasColumnName("status").HasConversion(partnershipLeadStatusConverter).HasMaxLength(40).HasDefaultValue(PartnershipLeadStatus.New).IsRequired();
+            builder.Property(x => x.Source).HasColumnName("source").HasMaxLength(80).HasDefaultValue("WEBSITE_PARTNERSHIP_FORM").IsRequired();
+            builder.Property(x => x.IpAddress).HasColumnName("ip_address").HasMaxLength(64);
+            builder.Property(x => x.UserAgent).HasColumnName("user_agent").HasMaxLength(512);
+            builder.Property(x => x.Notes).HasColumnName("notes");
+            builder.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            builder.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+            builder.Property(x => x.ContactedAt).HasColumnName("contacted_at");
         });
     }
 }

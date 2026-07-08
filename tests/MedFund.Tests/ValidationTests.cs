@@ -1,5 +1,6 @@
 using FluentAssertions;
 using MedFund.Application.Financing;
+using MedFund.Application.Partnerships;
 using MedFund.Application.Validation;
 using MedFund.Domain.Enums;
 using Xunit;
@@ -60,5 +61,86 @@ public sealed class ValidationTests
         var result = validator.Validate(request);
 
         result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Partnership_lead_accepts_healthcare_provider_submission()
+    {
+        var validator = new CreatePartnershipLeadRequestValidator();
+        var request = new CreatePartnershipLeadRequest(
+            "Priya",
+            "Nair",
+            "+91 98765 43210",
+            "priya@citycare.example",
+            "HEALTHCARE_PROVIDER",
+            "CityCare Multispeciality Hospital");
+
+        var result = validator.Validate(request);
+
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Partnership_lead_accepts_nbfc_submission()
+    {
+        var validator = new CreatePartnershipLeadRequestValidator();
+        var request = new CreatePartnershipLeadRequest(
+            "Rahul",
+            "Mehta",
+            "+91 99887 76655",
+            "rahul@financepartner.example",
+            "NBFC",
+            "Aegis Finance");
+
+        var result = validator.Validate(request);
+
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Partnership_lead_rejects_invalid_email()
+    {
+        var validator = new CreatePartnershipLeadRequestValidator();
+        var request = ValidPartnershipLeadRequest() with { Email = "not-an-email" };
+
+        var result = validator.Validate(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(x => x.PropertyName == nameof(CreatePartnershipLeadRequest.Email));
+    }
+
+    [Fact]
+    public void Partnership_lead_requires_organization_name()
+    {
+        var validator = new CreatePartnershipLeadRequestValidator();
+        var request = ValidPartnershipLeadRequest() with { OrganizationName = "" };
+
+        var result = validator.Validate(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(x => x.PropertyName == nameof(CreatePartnershipLeadRequest.OrganizationName));
+    }
+
+    [Fact]
+    public void Partnership_lead_rejects_unknown_partner_type()
+    {
+        var validator = new CreatePartnershipLeadRequestValidator();
+        var request = ValidPartnershipLeadRequest() with { PartnerType = "BANK" };
+
+        var result = validator.Validate(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(x => x.PropertyName == nameof(CreatePartnershipLeadRequest.PartnerType));
+    }
+
+    private static CreatePartnershipLeadRequest ValidPartnershipLeadRequest()
+    {
+        return new CreatePartnershipLeadRequest(
+            "Priya",
+            "Nair",
+            "+91 98765 43210",
+            "priya@citycare.example",
+            "HEALTHCARE_PROVIDER",
+            "CityCare Multispeciality Hospital");
     }
 }

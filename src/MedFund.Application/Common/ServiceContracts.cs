@@ -1,5 +1,6 @@
 using MedFund.Application.Auth;
 using MedFund.Application.Financing;
+using MedFund.Application.Partnerships;
 using MedFund.Application.Users;
 using MedFund.Domain.Enums;
 
@@ -103,4 +104,13 @@ public interface ISettlementService
     Task<IReadOnlyCollection<SettlementDto>> GetScopedAsync(CancellationToken cancellationToken);
 
     Task<SettlementDto> GetScopedByIdAsync(Guid id, CancellationToken cancellationToken);
+}
+
+public interface IPartnershipService
+{
+    Task<CreatePartnershipLeadResponse> CreateAsync(
+        CreatePartnershipLeadRequest request,
+        string? ipAddress,
+        string? userAgent,
+        CancellationToken cancellationToken);
 }

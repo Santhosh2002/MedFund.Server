@@ -1,4 +1,5 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using FluentValidation;
 using MedFund.Api.Filters;
 using MedFund.Api.Json;
@@ -9,7 +10,9 @@ using MedFund.Application.Validation;
 using MedFund.Infrastructure;
 using MedFund.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,11 +57,43 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "https://localhost:3000")
+        policy.WithOrigins(GetAllowedOrigins(builder.Configuration))
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
     });
+});
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("partnership-submissions", context =>
+    {
+        var clientIp = ReadClientIpAddress(context);
+        return RateLimitPartition.GetFixedWindowLimiter(
+            clientIp,
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(10),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            });
+    });
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/problem+json";
+        var problem = new ProblemDetails
+        {
+            Type = "https://httpstatuses.com/429",
+            Title = "Too many requests",
+            Status = StatusCodes.Status429TooManyRequests,
+            Detail = "Please try again later.",
+            Instance = context.HttpContext.Request.Path
+        };
+
+        await context.HttpContext.Response.WriteAsJsonAsync(problem, cancellationToken);
+    };
 });
 builder.Services
     .AddControllers(options =>
@@ -86,6 +121,7 @@ if (swaggerEnabled)
 }
 
 app.UseCors("Frontend");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapGet("/", () => swaggerEnabled ? Results.Redirect("/swagger") : Results.Ok(new { name = "MedFund API" })).AllowAnonymous();
@@ -103,6 +139,25 @@ static void UseRenderDatabaseUrl(ConfigurationManager configuration)
     }
 
     configuration["ConnectionStrings:DefaultConnection"] = ToNpgsqlConnectionString(databaseUrl);
+}
+
+static string[] GetAllowedOrigins(IConfiguration configuration)
+{
+    var configuredOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+    return configuredOrigins is { Length: > 0 }
+        ? configuredOrigins
+        : ["http://localhost:3000", "https://localhost:3000", "http://127.0.0.1:3000"];
+}
+
+static string ReadClientIpAddress(HttpContext context)
+{
+    var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+    if (!string.IsNullOrWhiteSpace(forwardedFor))
+    {
+        return forwardedFor.Split(',')[0].Trim();
+    }
+
+    return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 }
 
 static string ToNpgsqlConnectionString(string databaseUrl)

@@ -81,3 +81,18 @@ public enum DocumentType
     Invoice,
     Other
 }
+
+public enum PartnershipPartnerType
+{
+    HealthcareProvider,
+    Nbfc
+}
+
+public enum PartnershipLeadStatus
+{
+    New,
+    Contacted,
+    Qualified,
+    Rejected,
+    Converted
+}

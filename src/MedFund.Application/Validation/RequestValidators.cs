@@ -1,6 +1,7 @@
 using FluentValidation;
 using MedFund.Application.Auth;
 using MedFund.Application.Financing;
+using MedFund.Application.Partnerships;
 using MedFund.Domain.Enums;
 
 namespace MedFund.Application.Validation;
@@ -83,5 +84,21 @@ public sealed class InsuranceDecisionRequestValidator : AbstractValidator<Insura
         RuleFor(x => x.Notes)
             .NotEmpty()
             .When(x => x.ReviewStatus is InsuranceReviewStatus.Rejected or InsuranceReviewStatus.NeedsInfo);
+    }
+}
+
+public sealed class CreatePartnershipLeadRequestValidator : AbstractValidator<CreatePartnershipLeadRequest>
+{
+    public CreatePartnershipLeadRequestValidator()
+    {
+        RuleFor(x => x.FirstName).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.LastName).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.PhoneNumber).NotEmpty().MaximumLength(30);
+        RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(254);
+        RuleFor(x => x.PartnerType)
+            .NotEmpty()
+            .Must(x => x is "HEALTHCARE_PROVIDER" or "NBFC")
+            .WithMessage("Partner type must be HEALTHCARE_PROVIDER or NBFC.");
+        RuleFor(x => x.OrganizationName).NotEmpty().MaximumLength(200);
     }
 }

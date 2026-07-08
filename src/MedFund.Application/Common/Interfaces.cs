@@ -29,6 +29,8 @@ public interface IApplicationDbContext
 
     DbSet<UserSecurityToken> UserSecurityTokens { get; }
 
+    DbSet<PartnershipLead> PartnershipLeads { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
 
